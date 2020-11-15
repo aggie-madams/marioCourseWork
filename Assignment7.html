@@ -1,0 +1,304 @@
+
+<head>
+	<title>New Assignment 7</title>
+	<meta charset="UTF-8">
+</head>
+<body>
+<br>
+<canvas id="myCanvas" width="800" height="500" style="border:1px solid #cccccc;"></canvas>
+
+<script type="text/javascript">
+
+class Sprite
+{
+	constructor(x, y, w, h, image_url)
+	{
+		this.x = x;
+		this.y = y;
+		this.image = new Image();
+		this.image.src = image_url;
+		this.w = w;
+		this.h = h;
+	}
+
+
+	ignore_click(x, y)
+	{
+	}
+
+	move(dx, dy)
+	{
+		this.dest_x = this.x + dx;
+		console.log("this.dx: " + dx);
+		console.log("this.dest_x: " + this.x + dx);
+		this.dest_y = this.y + dy;
+	}
+
+
+	set_destination(x, y)
+	{
+		this.dest_x = x;
+		this.dest_y = y;
+	}
+}
+
+
+class Mario extends Sprite
+{
+
+	constructor(x, y, w, h, image_url)
+	{
+		super(x, y, w, h, image_url);	
+		this.vertVelocity = 12.0;
+		this.marioOffset = 100;
+		this.marioNum = 0;
+		this.jumpCounter = 0;
+		
+	}
+		
+	update()
+	{
+		this.vertVelocity += 2.4;
+		this.y+= this.vertVelocity;
+		this.jumpCounter++;
+		
+		//landing on the ground
+		if(this.y > 450 - this.h){	
+			this.vertVelocity = 0;
+			this.y = 450 - this.h;
+			this.jumpCounter = 0;
+		}
+		if(this.y < 0){
+			this.y = 0;
+		}
+		
+	}
+
+	//Jump function that keeps count how long Mario's in the air
+	jump()
+	{
+		if(this.jumpCounter < 5)
+			this.vertVelocity -= 8.9;	
+	}
+	
+	savePrevCoords()
+	{
+		this.prevX = this.x;
+		this.prevY = this.y;
+		
+	}
+
+	updateImage()
+	{
+		//console.log("In updateImage");
+	}
+	
+	getOutOfDangTube(t)
+	{
+		//console.log("t.x: " + t.x);
+		//console.log("t.y: " + t.y);
+		//console.log("t.w: " + t.w);
+		//console.log("t.h: " + t.h);
+		//console.log("mario.x + h: " + (this.x + this.h));
+		//console.log("mario.y: " + this.y);
+		//console.log("mario.prevX: " + this.prevX);
+		//console.log("mario.prevY: " + this.prevY);
+		console.log("(this.y + this.h): " + (this.y + this.h));
+		console.log("t.y: " + t.y);
+		//if approaching from the left of a tube
+		if(((this.x + this.w) >= t.x) && ((this.prevX + this.w) <= t.x))
+			this.x = t.x - this.w;
+	
+		//if approaching from the right of a tube
+		if((this.x <= (t.x + t.w)) && (this.prevX >= (t.x + t.w)))
+			this.x = t.x + t.w;
+
+		//if approaching from above a tube
+		if(((this.y + this.h) >= t.y) && ((this.prevY + this.h) <= t.y)) 	
+		{
+			console.log("approaching from above");	
+			console.log("mario.y: " + this.y);
+			console.log("t.y: " + t.y);
+			console.log("t.h: " + t.h);
+			this.y = t.y - this.h;
+			this.jumpCounter = 0;
+		}
+		//if approaching from below
+		if((this.y <= (t.y + t.h)) && (this.prevY >= (t.y + t.h))) 
+			this.y = t.y + t.h;    
+	}
+	
+}
+
+class Tube extends Sprite
+{
+		constructor(x, y, w, h, image_url)
+	{
+		super(x, y, w, h, image_url);
+	}
+
+	update()
+	{	
+	}
+
+	//write method location relevant to mario
+}
+
+
+
+class Model
+{
+	
+	constructor()
+	{
+		this.sprites = [];
+		this.sprites.push(new Tube(270, 300, 55, 400, "tube.png"));
+		this.sprites.push(new Tube(400, 200, 55, 400, "tube.png"));
+		this.sprites.push(new Tube(600, 350, 55, 400, "tube.png"));
+		this.sprites.push(new Tube(900, 200, 55, 400, "tube.png"));
+		this.mario = new Mario(200, 350, 60, 95, "mario1.png");
+		this.sprites.push(this.mario);
+	}
+
+	update()
+	{
+		for(let i = 0; i < this.sprites.length; i++)
+		{
+			this.sprites[i].update();
+			if(this.sprites[i] instanceof Tube){
+			   this.t = this.sprites[i];
+			   if(this.tubeCollision(this.t)){
+				this.mario.getOutOfDangTube(this.t);
+				}
+			}
+		
+		}
+	}
+
+	tubeCollision(t)
+	{		
+			
+		if((this.mario.x + this.mario.w) < this.t.x)
+			return false;
+		if((this.mario.x) > (this.t.x+ this.t.w))
+			return false;
+		if((this.mario.y + this.mario.h) < this.t.y)
+			return false;  
+		if(this.mario.y > (this.t.y +this.t.h))
+			 return false;
+			  
+		return true;		 
+	}
+
+
+}
+
+
+
+
+class View
+{
+	constructor(model)
+	{
+		this.model = model;
+		this.canvas = document.getElementById("myCanvas");
+		//this.turtle = new Image();
+		//this.turtle.src = "turtle.png";
+	}
+
+	update()
+	{
+		let ctx = this.canvas.getContext("2d");
+		ctx.fillStyle = "cyan";
+		ctx.fillRect(0, 0, 800, 500);
+		ctx.fillStyle = "ForestGreen";
+		ctx.fillRect(0, 425, 800, 500);
+		for(let i = 0; i < this.model.sprites.length; i++)
+		{
+			let sprite = this.model.sprites[i];
+			ctx.drawImage(sprite.image, sprite.x, sprite.y);
+		}
+	}
+}
+
+
+
+
+
+
+
+class Controller
+{
+	constructor(model, view)
+	{
+		this.model = model;
+		this.view = view;
+		this.key_right = false;
+		this.key_left = false;
+		this.key_space = false;
+		let self = this;
+		document.addEventListener('keydown', function(event) { self.keyDown(event); }, false);
+		document.addEventListener('keyup', function(event) { self.keyUp(event); }, false);
+	}
+
+	keyDown(event)
+	{
+		if(event.keyCode == 39) this.key_right = true;
+		else if(event.keyCode == 37) this.key_left = true;
+		else if(event.keyCode == 32) this.key_space = true;
+	}
+
+	keyUp(event)
+	{
+		if(event.keyCode == 39) this.key_right = false;
+		else if(event.keyCode == 37) this.key_left = false;
+		else if(event.keyCode == 32) this.key_space = false;
+	}
+
+	update()
+	{	
+		this.model.mario.savePrevCoords(); 
+		if(this.key_right)
+		{	
+			this.model.mario.updateImage();
+		 	this.model.mario.x+= 5;
+		}
+		if(this.key_left)
+		{	
+			this.model.mario.updateImage();
+			this.model.mario.x-= 5;
+			
+		}
+		if(this.key_space) this.model.mario.jump();	
+	}
+}
+
+
+
+
+
+class Game
+{
+	constructor()
+	{
+		this.model = new Model();
+		this.controller = new Controller(this.model);
+		this.view = new View(this.model, this.controller);
+		
+	}
+
+	onTimer()
+	{
+		this.controller.update();
+		this.model.update();
+		this.view.update();
+	}
+}
+
+
+let game = new Game();
+let timer = setInterval(function() { game.onTimer(); }, 40);
+
+</script>
+
+</body>

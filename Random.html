@@ -1,0 +1,54 @@
+
+<head>
+
+	<title>Random - Maggie Adams 11/14/20 </title>
+	<meta charset="UTF-8">
+</head>
+<body>
+<br>
+<canvas id="myCanvas" width="1000" height="500" style="border:1px solid #cccccc;"></canvas>
+
+<script type="text/javascript">
+
+Var context, controller, rectangle, loop;
+
+context = document.querySelector("canvas").getContext("2d");
+
+context.canvas.height = 180;
+context.canvas.width = 320;
+
+Rectangle = {
+
+	height: 32,
+	jumping: true,
+	width: 32,
+	x: 144, 
+	x_velocity:0;
+	y: 0;
+	y_velocity:0;
+};
+
+Controller = {
+	
+	left: false,
+	right: false,
+	up: false,
+	keyListener:function(event) {
+	
+	var key_state = (event.type == "keydown")?true:false;
+
+	switch(event.keyCode){
+	
+	case 37: //left key
+		controller.left = key_state;
+	break;
+	case 38: //key up
+		controller.up = key_state;
+	case 39: //right key
+		controller.right = key_state;	
+	break;	
+
+	}
+};
+</script>
+</body>
